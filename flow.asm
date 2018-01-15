@@ -149,11 +149,13 @@ start_step_loop:
   
   addss xmm2, xmm4 ; result
 
+  xor r9d, r9d
+  mov r9d, ecx
+  imul r9d, [height]
+  add r9d, edx
+  imul r9d, 4
+
   mov r8, [T]
-  mov r9, rcx
-  imul r9, [height]
-  add r9, rdx
-  imul r9, 4
 
   movss xmm4, [r8 + r9]
   addss xmm2, xmm4

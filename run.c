@@ -56,21 +56,21 @@ float* initialize_step_value(int size, float value) {
 }
 
 void print_T(int height, int width, float* T) {
-  printf("==== ARRAY ====\n");
+  // printf("==== ARRAY ====\n");
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       printf("%f ", T[i * width + j]);
     }
     printf("\n");
   }
-  printf("++++ TMP COLUMNS ++++\n");
-  for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < height; j++) {
-      printf("%f ", T[width * height + height * i + j]);
-    }
-    printf("\n");
-  }
-  printf("==== END ARRAY ====\n");
+  // printf("++++ TMP COLUMNS ++++\n");
+  // for (int i = 0; i < 2; i++) {
+  //   for (int j = 0; j < height; j++) {
+  //     printf("%f ", T[width * height + height * i + j]);
+  //   }
+  //   printf("\n");
+  // }
+  // printf("==== END ARRAY ====\n");
 }
 
 extern void start(int width, int height, float *M, float weight);
@@ -83,8 +83,6 @@ int main() {
   float* T = malloc(sizeof(float*));
 
   initialize(&width, &height, &weight, &T);
-  printf("Initial array result:\n");
-  print_T(height, width, T);
 
   if (width < 1 || height < 1) {
     printf("width && height must be > 1");
@@ -93,16 +91,9 @@ int main() {
 
   float* step_array = initialize_step_value(height, 1.0);
 
-  printf("Step array address: %p : [", step_array);
-  for (int i = 0; i < height; i++) {
-    printf("%f ", step_array[i]);
-  }
-  printf("]\n");
-
   start(width, height, T, weight);
   step(step_array);
 
-  printf("Final array result:\n");
   print_T(height, width, T);
 
   return 0;
