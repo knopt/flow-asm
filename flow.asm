@@ -1,3 +1,6 @@
+  section .data
+floatzero: dd 0.0,
+  
   SECTION .bss
 
 width:      resb 4
@@ -18,7 +21,7 @@ start:
 	mov   [width], rdi
   mov   [height], rsi
   mov   [T], rdx
-	movd  [weight], xmm0
+	vmovd  [weight], xmm0
   mov   rcx, rdi
   imul  rcx, rsi  ; width * height
   imul  rcx, 4
@@ -30,18 +33,20 @@ start:
   ret
 
 
+
 step:
 	push rbp
 	mov	rbp, rsp
-  ; w rdi wskaznik do poczatkowej tablicy wartosci
+  sub rsp, 128
+
+  push rdi
   mov rsi, rdi   ; tablica argument do rsi
-  push rdi ; zapamietac w rdx argument
   mov rdi, [oldleft]
   xor rdx, rdx
   mov edx, [height]
   imul edx, 4
   call memcpy
-
+  
   mov rdi, [oldmiddle]
   mov rsi, [T]
   xor rdx, rdx
@@ -50,55 +55,152 @@ step:
   call memcpy
 
   pop rdi
+
   mov rcx, 0
 
 start_step_loop:
   cmp ecx, [width]
   je exit_step
-  inc ecx
 
-step_flow:
   ; oldleft i oldmiddle ustawione
   ; ecx wskazuje na to ktora kolumne aktualnie ustawiamy
-  mov edx, 0
 
-single_cell_step_flow:
+  mov rdx, 0 ; uzywamy jedynie edx, ale wyzerujemy calosc
 
-  cmp edx, [height]
-  je start_step_loop
+.calculate_values:
 
-  movd xmm0, [weight]
+  movss xmm0, [weight]
   shufps xmm0, xmm0, 0x00 ; xmm0 rozszerzone, waga na kazdej z 4 pozycji
 
+  xor r9, r9
+  mov r9d, [height]
+  imul r9d, ecx
+  add r9d, edx
+  imul r9d, 4 ; index aktualnego elementu
+  mov r8, [T]
+
+  movss xmm1, [r8 + r9]
+  shufps xmm1, xmm1, 0x00 ; xmm1 aktualna wartosc komorki rozwazanej
+
+  cmp edx, 0 
+  je .top
+
+  ; we are not in the top row, we can proceed with adding the values
+
+  xor rax, rax
   mov eax, edx
   dec eax
   imul eax, 4
 
   mov r8, [oldleft]
-  mov r8d, [r8 + eax]
-  movd xmm1, r8d  ; left upper
+  mov r8d, [r8 + rax]
+  mov [rbp - 4], r8d
+  ; push r8d  ; left upper
 
   mov r8, [oldmiddle]
-  mov r8d, [r8 + eax]
-  movd xmm1, r8d
+  mov r8d, [r8 + rax]
+  mov [rbp - 8], r8d
+  jmp .after_top
+
+.top:
+  movss [rbp - 4], xmm1
+  movss  [rbp - 8], xmm1
+
+.after_top:
+
+  xor rax, rax
+  mov eax, edx
+  inc eax 
+
+  cmp eax, [height]
+
+  je .bottom
+
+  imul eax, 4
+  xor r9, r9
+
+  mov r8, [oldleft]
+  movss xmm5, [r8 + rax] ; lewa dolna komorka
+  movss [rbp - 12], xmm5
+
+  mov r8, [oldmiddle]
+  movss xmm5, [r8 + rax]
+  movss [rbp - 16], xmm5
+
+  jmp .after_bottom
+
+.bottom:
+  movss [rbp - 12], xmm1
+  movss [rbp - 16], xmm1
+
+.after_bottom:
+
+  ; pxor xmm2, xmm2
+  movaps xmm2, [rbp - 16]
+  subps xmm2, xmm1 ; delta * weight
+  dpps xmm2, xmm0, 11110001b ; wartosc koncowa bez policzonego srodkowego lewega sasiada
 
 
-  mov eax, ecx
-  mul eax, edx
-  mul eax, 4 ; eax = indeks aktualnej przetwarzanej komorki
+  pxor xmm4, xmm4
+  mov r8, [oldleft]
+  movss xmm4, [r8 + 4 * rdx] ; 4 * rdx to obecna wysokosc
+  subss xmm4, xmm1 ; delta
+  mulss xmm4, xmm0 ; delta * weight
+  
+  addss xmm2, xmm4 ; result
 
-  movd xmm1, 
+  mov r8, [T]
+  mov r9, rcx
+  imul r9, [height]
+  add r9, rdx
+  imul r9, 4
+
+  movss xmm4, [r8 + r9]
+  addss xmm2, xmm4
+
+  lea r10, [r8 + r9]
+
+  movss [r10], xmm2
 
   inc edx
-  jmp single_cell_step_flow
+  cmp edx, [height]
+  jne .calculate_values
 
-  ; byc moze trzeba tutaj ustawic oldleft oldmiddle
+  ; we already processed the whole column
 
-  ; pamietac zeby nowe wartosci przesunac na koncu do rdi
+  push rdx
+  push rcx
 
+  mov rdi, [oldleft]
+  mov rsi, [oldmiddle]
+  xor rdx, rdx
+  mov edx, [height]
+  imul edx, 4
+  call memcpy
+
+  xor rdx, rdx
+  mov edx, [height]
+  imul edx, 4 ; ostatni argument mem cpy, rozmiar
+
+  pop rcx
+  push rcx
+
+  imul ecx, [height]
+  imul ecx, 4
+  mov rsi, [T] ; 2 argument memcpy zrodlo
+  add rsi, rcx
+
+  mov rdi, [oldmiddle] ; pierwszy agrument mem cpy - destynacja
+  call memcpy
+
+  pop rcx
+  pop rdx
+
+  inc ecx
+
+  jmp start_step_loop
 
 exit_step:
-	mov	rsp, rbp
-	pop	rbp
+  leave
   ret
 
