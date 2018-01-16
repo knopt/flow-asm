@@ -18,6 +18,10 @@ for i in range(EX_NUM):
 
   step_array = [uniform(-MAX_NUMBER, MAX_NUMBER) for x in range(height)]
 
+  if not os.path.exists('ex'):
+    os.makedirs('ex')
+
+
   with open('ex/{}.in'.format(i), 'w') as f:
     f.write("{}\n".format(width))
     f.write("{}\n".format(height))

@@ -17,6 +17,10 @@ for in_file_name in sorted(os.listdir('ex')):
 
     command = EXEC_PATH
 
+    if not os.path.exists('res'):
+      os.makedirs('res')
+
+
     with open(os.path.join('ex', in_file_name), 'r') as in_file:
       with open(os.path.join('res', no_ext) + '.out', 'w') as out_file:      
         process = subprocess.Popen(command, shell=True, stdout=out_file, stdin=in_file)
