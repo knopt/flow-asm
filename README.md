@@ -20,6 +20,7 @@ Then you have to provide:
 -height (int)
 -weight (float)
 -array (float)
+-steps number (int)
 -initial step values array (float)
 
 ### Test

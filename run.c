@@ -63,12 +63,18 @@ int main() {
     return 1;
   }
 
+  int steps = 0;
+  scanf("%d", &steps);
+
   float* step_array = initialize_step_stdin(height);
 
   start(width, height, T, weight);
-  step(step_array);
 
-  print_T(height, width, T);
+  for (int i = 0; i < steps; i++) {
+    step(step_array);
+    print_T(height, width, T);
+  }
+
 
   return 0;
 }
