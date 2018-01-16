@@ -4,7 +4,7 @@ from random import uniform, randint
 MAX_DIM = 100
 MAX_NUMBER = 10
 
-EX_NUM = 1000
+EX_NUM = 100
 
 for i in range(EX_NUM):
   height = randint(1, MAX_DIM)

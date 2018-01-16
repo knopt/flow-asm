@@ -1,20 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 void initialize(int* resWidth, int* resHeight, float* resWeight, float** addrT) {
   float* resT;
-  // printf("width: \n");
   scanf("%d", resWidth);
-  // printf("height: \n");
   scanf("%d", resHeight);
-  // printf("weight:\n");
   scanf("%f", resWeight);
 
   int height = *resHeight;
   int width = *resWidth;
-
 
   resT = malloc((height * (width+2)) * sizeof(float));
 
@@ -26,21 +21,11 @@ void initialize(int* resWidth, int* resHeight, float* resWeight, float** addrT) 
     }
   }
 
-  memset(resT+(height*width), 0, height*2); // 2 additional rows for temporary values during the flow
+  // 2 additional rows for temporary values during the flow
+  // possibly could have been done in assembly, but it's fine
+  memset(resT+(height*width), 0, height*2); 
   
   *addrT = resT;
-}
-
-float* initialize_step(int size) {
-  float* arr = malloc(size * sizeof(float));
-
-  srand48(time(NULL));
-
-  for (int i = 0; i < size; i++) {
-    arr[i] = (float) drand48() * 10;
-  }
-
-  return arr;
 }
 
 float* initialize_step_stdin(int size) {
@@ -53,32 +38,13 @@ float* initialize_step_stdin(int size) {
   return arr;
 }
 
-float* initialize_step_value(int size, float value) {
-  float* arr = malloc(size * sizeof(float));
-
-  for (int i = 0; i < size; i++) {
-    arr[i] = value;
-  }
-  
-  return arr;
-}
-
 void print_T(int height, int width, float* T) {
-  // printf("==== ARRAY ====\n");
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       printf("%f ", T[j * height + i]);
     }
     printf("\n");
   }
-  // printf("++++ TMP COLUMNS ++++\n");
-  // for (int i = 0; i < 2; i++) {
-  //   for (int j = 0; j < height; j++) {
-  //     printf("%f ", T[width * height + height * i + j]);
-  //   }
-  //   printf("\n");
-  // }
-  // printf("==== END ARRAY ====\n");
 }
 
 extern void start(int width, int height, float *M, float weight);
@@ -94,15 +60,10 @@ int main() {
 
   if (width < 1 || height < 1) {
     printf("width && height must be >= 1");
-    return 0;
+    return 1;
   }
 
   float* step_array = initialize_step_stdin(height);
-
-  // for (int i = 0; i < height; i++) {
-  //   printf("%f ", step_array[i]);
-  // }
-  // printf("\n");
 
   start(width, height, T, weight);
   step(step_array);
