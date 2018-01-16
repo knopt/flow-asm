@@ -93,13 +93,13 @@ start_step_loop:
   imul eax, 4
 
   mov r8, [oldleft]
-  mov r8d, [r8 + rax]
-  mov [rbp - 4], r8d
+  movss xmm5, [r8 + rax]
+  movss [rbp - 4], xmm5
   ; push r8d  ; left upper
 
   mov r8, [oldmiddle]
-  mov r8d, [r8 + rax]
-  mov [rbp - 8], r8d
+  movss xmm5, [r8 + rax]
+  movss [rbp - 8], xmm5
   jmp .after_top
 
 .top:
@@ -170,6 +170,13 @@ start_step_loop:
 
   ; we already processed the whole column
 
+  xor rax, rax
+  mov eax, ecx
+  inc eax
+  
+  cmp eax, [width]
+  je exit_step
+
   push rdx
   push rcx
 
@@ -186,7 +193,8 @@ start_step_loop:
 
   pop rcx
   push rcx
-
+  
+  inc ecx
   imul ecx, [height]
   imul ecx, 4
   mov rsi, [T] ; 2 argument memcpy zrodlo

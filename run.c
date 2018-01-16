@@ -5,11 +5,11 @@
 
 void initialize(int* resWidth, int* resHeight, float* resWeight, float** addrT) {
   float* resT;
-  printf("width: \n");
+  // printf("width: \n");
   scanf("%d", resWidth);
-  printf("height: \n");
+  // printf("height: \n");
   scanf("%d", resHeight);
-  printf("weight:\n");
+  // printf("weight:\n");
   scanf("%f", resWeight);
 
   int height = *resHeight;
@@ -18,8 +18,8 @@ void initialize(int* resWidth, int* resHeight, float* resWeight, float** addrT) 
 
   resT = malloc((height * (width+2)) * sizeof(float));
 
-  for (int i = 0; i < width; i++) {
-    for (int j = 0; j < height; j++) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
       float scannedValue = 0;
       scanf("%f", &scannedValue);
       resT[i * height + j] = scannedValue;
@@ -43,15 +43,23 @@ float* initialize_step(int size) {
   return arr;
 }
 
-float* initialize_step_value(int size, float value) {
+float* initialize_step_stdin(int size) {
   float* arr = malloc(size * sizeof(float));
 
-  // memset(arr, value, size * sizeof(float));
+  for (int i = 0; i < size; i++) {
+    scanf("%f", arr + i);
+  }
+
+  return arr;
+}
+
+float* initialize_step_value(int size, float value) {
+  float* arr = malloc(size * sizeof(float));
 
   for (int i = 0; i < size; i++) {
     arr[i] = value;
   }
-
+  
   return arr;
 }
 
@@ -59,7 +67,7 @@ void print_T(int height, int width, float* T) {
   // printf("==== ARRAY ====\n");
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      printf("%f ", T[i * width + j]);
+      printf("%f ", T[j * height + i]);
     }
     printf("\n");
   }
@@ -85,11 +93,16 @@ int main() {
   initialize(&width, &height, &weight, &T);
 
   if (width < 1 || height < 1) {
-    printf("width && height must be > 1");
+    printf("width && height must be >= 1");
     return 0;
   }
 
-  float* step_array = initialize_step_value(height, 1.0);
+  float* step_array = initialize_step_stdin(height);
+
+  // for (int i = 0; i < height; i++) {
+  //   printf("%f ", step_array[i]);
+  // }
+  // printf("\n");
 
   start(width, height, T, weight);
   step(step_array);

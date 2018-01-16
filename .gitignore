@@ -4,3 +4,9 @@
 peda-session-run.txt
 
 run
+
+test/res/*
+
+test/venv
+
+test/venv/*
