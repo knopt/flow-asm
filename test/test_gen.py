@@ -1,4 +1,5 @@
 import sys
+import os
 from random import uniform, randint
 
 MAX_DIM = 100
