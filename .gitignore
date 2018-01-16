@@ -6,6 +6,7 @@ peda-session-run.txt
 run
 
 test/res/*
+test/ex/*
 
 test/venv
 
